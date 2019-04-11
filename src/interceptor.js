@@ -2,14 +2,13 @@
  * @Zepto事件拦截器插件
  * 
  */
-
 (function ($) {
   var preOnFn = $.fn.on
   var copyFn = $.fn
   function formatInterceptor (handler, event) {
     var interceptorItem = {}
     if (event === undefined) {
-      interceptorItem.event = ['all']
+      interceptorItem.event = ['ALL_EVENTS']
     } else  if (typeof event === 'string') {
       interceptorItem.event = [event]
     } else if (Array.isArray(event)) {
@@ -20,15 +19,54 @@
     }
     return interceptorItem
   }
-
-  copyFn.interceptor = function (handler, event) {
-    if (!Array.isArray(this.interceptors)) {
-      this.interceptors = []
+  function delEqulVal (delArr, arr) {
+    for (var i = 0; i < delArr.length; i++) {
+      var element = delArr[i];
+      var index = arr.indexOf(element)
+      if (index > -1) {
+        arr.splice(index, 1)
+      }
     }
-    handler && this.interceptors.push(formatInterceptor(handler, event))
+  }
+  // 添加拦截器
+  copyFn.interceptor = function (handler, event) {
+    this.each(function () {
+      if (!Array.isArray(this.interceptors)) {
+        this.interceptors = []
+      }
+      handler && this.interceptors.push(formatInterceptor(handler, event))
+    })
     return this
   }
-  copyFn.on =  function () {
+  copyFn.interceptorCancel = function (event) {
+    this.each(function () {
+      if (event !== undefined) {
+        var delEvents = []
+        if (typeof event === 'string') {
+          delEvents.push(event)
+        } else if (Array.isArray(event)) {
+          delEvents = delEvents.concat(event)
+        }
+        for (var j = 0; j < this.interceptors.length; j++) {
+          var element = this.interceptors[j];
+          delEqulVal(delEvents, element.event)
+          if (element.event.indexOf('ALL_EVENTS') > -1) {
+            if (!element.exclude ) {
+              element.exclude = []
+            }
+            element.exclude = element.exclude.concat(delEvents)
+          } else if (element.event.length === 0) {
+            this.interceptors.splice(j, 1)
+            j--
+          }
+        }
+      } else {
+        this.interceptors = []
+      }
+    })
+    return this
+  }
+  copyFn.on = function () {
     var ages = Array.prototype.slice.call(arguments)
     var functionIndex = -1
     var eventFn = ages.filter(function (item, index) {
@@ -40,13 +78,14 @@
       }
     })[0]
     var newEventFn
-    var filterInterceptors = this.interceptors ? this.interceptors.filter(function (item) {
-      return item.event.indexOf('all') > -1 || item.event.indexOf(ages[0]) > -1
-    }) : []
+    var that = this
     if (ages[0] && typeof ages[0] !== 'string') {
       newEventFn = eventFn
     } else {
       newEventFn = function (event) {
+        var filterInterceptors = this.interceptors ? this.interceptors.filter(function (item) {
+          return (item.event.indexOf('ALL_EVENTS') > -1 &&  (!item.exclude || item.exclude.indexOf(ages[0]) === -1) )|| item.event.indexOf(ages[0]) > -1
+        }) : []
         var isOk = filterInterceptors.every(function (item) {
           var el = item.handler
           if (typeof el === 'function') {
@@ -60,12 +99,12 @@
           }
         })
         if (isOk) {
-          eventFn(event)
+          eventFn.call(this, event)
         }
       }
     }
     functionIndex > -1 && ages.splice(functionIndex, 1, newEventFn)
-    return preOnFn.apply(this, ages)
+    return preOnFn.apply(that, ages)
   }
 
-})(Zepto || jQuery)
+})(Zepto)
