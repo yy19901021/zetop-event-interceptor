@@ -2,7 +2,7 @@
 主要作用是zetop.on添加的事件函数执行之前，对其进行拦截。
 ### 用法
 ```
-  .......引入js.......
+  .......<script src="zepto-interceptor/lib/index.min.js"></script>........
   
   $(selector).interceptor(headler, event).on() // 添加拦截器
   $(selector).interceptorCancel(events) // 取消拦截器

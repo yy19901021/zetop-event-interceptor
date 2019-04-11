@@ -1,0 +1,25 @@
+{
+  "name": "zepto-interceptor",
+  "version": "1.0.0",
+  "description": "Zepto事件拦截器插件",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib/index.min.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yy19901021/zetop-event-interceptor.git"
+  },
+  "keywords": [
+    "Zepto"
+  ],
+  "author": "yangyang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yy19901021/zetop-event-interceptor/issues"
+  },
+  "homepage": "https://github.com/yy19901021/zetop-event-interceptor#readme"
+}
